@@ -12,7 +12,7 @@ go get github.com/GreenGeorge/go-rajaongkir
 ```
 
 ## Usage
-```
+```go
   ...
   import "github.com/GreenGeorge/rajaongkir"
   ...

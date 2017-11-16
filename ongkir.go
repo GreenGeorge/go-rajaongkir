@@ -12,6 +12,32 @@ const (
 	costEndpoint     = "/cost"
 )
 
+type rajaOngkirCostResp struct {
+	RajaOngkir struct {
+		Status struct {
+			Code        int    `json:"code"`
+			Description string `json:"description"`
+		} `json:"status"`
+		Results []struct {
+			Code  string        `json:"code"`
+			Name  string        `json:"name"`
+			Costs []serviceCost `json:"costs"`
+		} `json:"results"`
+	} `json:"rajaongkir"`
+}
+
+type serviceCost struct {
+	Service     string `json:"service"`
+	Description string `json:"description"`
+	Cost        []cost `json:"cost"`
+}
+
+type cost struct {
+	Value int64  `json:"value"`
+	ETD   string `json:"etd"`
+	Note  string `json:"note"`
+}
+
 // RajaOngkir struct wraps our request operations
 type RajaOngkir struct {
 	apiKey  string
@@ -71,12 +97,13 @@ func (r *RajaOngkir) GetCities() string {
 }
 
 // GetCost fetches the shipping rate
-func (r *RajaOngkir) GetCost(origin, destination, weight int, courier string) string {
-	data := fmt.Sprintf("origin=%d&destination=%d&weight=%d&courier=%s", origin, destination, weight, courier)
+func (r *RajaOngkir) GetCost(origin string, destination string, weight int, courier string) rajaOngkirCostResp {
+	var b rajaOngkirCostResp
+	data := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
 	request := r.createPostRequest(costEndpoint, data)
-	_, body, err := request.End()
+	_, _, err := request.EndStruct(&b)
 	if err != nil {
 		fmt.Println("Request failed", err)
 	}
-	return body
+	return b
 }

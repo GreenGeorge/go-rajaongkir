@@ -12,7 +12,24 @@ const (
 	costEndpoint     = "/cost"
 )
 
-type rajaOngkirCostResp struct {
+type CitiesResp struct {
+	RajaOngkir struct {
+		Status struct {
+			Code int `json:"code"`
+		} `json:"status"`
+		Results []city `json:"results"`
+	} `json:"rajaongkir"`
+}
+
+type city struct {
+	City       string `json:"city_name"`
+	CityID     string `json:"city_id"`
+	Province   string `json:"province"`
+	ProvinceID string `json:"province_id"`
+	Type       string `json:"type"`
+}
+
+type CostResp struct {
 	RajaOngkir struct {
 		Status struct {
 			Code        int    `json:"code"`
@@ -98,18 +115,19 @@ func (r *RajaOngkir) GetProvince(id string) string {
 }
 
 // GetCities fetches the list of cities
-func (r *RajaOngkir) GetCities() string {
+func (r *RajaOngkir) GetCities() CitiesResp {
+	var b CitiesResp
 	request := r.createGetRequest(cityEndpoint)
-	_, body, err := request.End()
+	_, _, err := request.EndStruct(&b)
 	if err != nil {
 		fmt.Println("Request failed", err)
 	}
-	return body
+	return b
 }
 
 // GetCost fetches the shipping rate
-func (r *RajaOngkir) GetCost(origin string, destination string, weight int, courier string) rajaOngkirCostResp {
-	var b rajaOngkirCostResp
+func (r *RajaOngkir) GetCost(origin string, destination string, weight int, courier string) CostResp {
+	var b CostResp
 	data := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
 	request := r.createPostRequest(costEndpoint, data)
 	_, _, err := request.EndStruct(&b)

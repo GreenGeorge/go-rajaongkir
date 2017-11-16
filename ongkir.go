@@ -86,6 +86,17 @@ func (r *RajaOngkir) GetProvinces() string {
 	return body
 }
 
+// GetProvince fetches a specific province
+// given an ID
+func (r *RajaOngkir) GetProvince(id string) string {
+	request := r.createGetRequest(fmt.Sprintf("%s?id=%s", provinceEndpoint, id))
+	_, body, err := request.End()
+	if err != nil {
+		fmt.Println("Request failed", err)
+	}
+	return body
+}
+
 // GetCities fetches the list of cities
 func (r *RajaOngkir) GetCities() string {
 	request := r.createGetRequest(cityEndpoint)

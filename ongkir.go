@@ -17,11 +17,11 @@ type CitiesResp struct {
 		Status struct {
 			Code int `json:"code"`
 		} `json:"status"`
-		Results []city `json:"results"`
+		Results []City `json:"results"`
 	} `json:"rajaongkir"`
 }
 
-type city struct {
+type City struct {
 	City       string `json:"city_name"`
 	CityID     string `json:"city_id"`
 	Province   string `json:"province"`

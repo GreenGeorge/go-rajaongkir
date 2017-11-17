@@ -2,7 +2,8 @@ package rajaongkir
 
 import (
 	"fmt"
-	"gorequest"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 // List of endpoints according to https://rajaongkir.com/dokumentasi/starter

@@ -2,7 +2,8 @@ package rajaongkir
 
 import (
 	"fmt"
-	"gorequest"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 // List of endpoints according to https://rajaongkir.com/dokumentasi/starter
@@ -11,6 +12,49 @@ const (
 	cityEndpoint     = "/city"
 	costEndpoint     = "/cost"
 )
+
+type CitiesResp struct {
+	RajaOngkir struct {
+		Status struct {
+			Code int `json:"code"`
+		} `json:"status"`
+		Results []City `json:"results"`
+	} `json:"rajaongkir"`
+}
+
+type City struct {
+	City       string `json:"city_name"`
+	CityID     string `json:"city_id"`
+	Province   string `json:"province"`
+	ProvinceID string `json:"province_id"`
+	Type       string `json:"type"`
+}
+
+type CostResp struct {
+	RajaOngkir struct {
+		Status struct {
+			Code        int    `json:"code"`
+			Description string `json:"description"`
+		} `json:"status"`
+		Results []struct {
+			Code  string        `json:"code"`
+			Name  string        `json:"name"`
+			Costs []serviceCost `json:"costs"`
+		} `json:"results"`
+	} `json:"rajaongkir"`
+}
+
+type serviceCost struct {
+	Service     string `json:"service"`
+	Description string `json:"description"`
+	Cost        []cost `json:"cost"`
+}
+
+type cost struct {
+	Value int64  `json:"value"`
+	ETD   string `json:"etd"`
+	Note  string `json:"note"`
+}
 
 // RajaOngkir struct wraps our request operations
 type RajaOngkir struct {
@@ -60,9 +104,10 @@ func (r *RajaOngkir) GetProvinces() string {
 	return body
 }
 
-// GetCities fetches the list of cities
-func (r *RajaOngkir) GetCities() string {
-	request := r.createGetRequest(cityEndpoint)
+// GetProvince fetches a specific province
+// given an ID
+func (r *RajaOngkir) GetProvince(id string) string {
+	request := r.createGetRequest(fmt.Sprintf("%s?id=%s", provinceEndpoint, id))
 	_, body, err := request.End()
 	if err != nil {
 		fmt.Println("Request failed", err)
@@ -70,13 +115,25 @@ func (r *RajaOngkir) GetCities() string {
 	return body
 }
 
-// GetCost fetches the shipping rate
-func (r *RajaOngkir) GetCost(origin, destination, weight int, courier string) string {
-	data := fmt.Sprintf("origin=%d&destination=%d&weight=%d&courier=%s", origin, destination, weight, courier)
-	request := r.createPostRequest(costEndpoint, data)
-	_, body, err := request.End()
+// GetCities fetches the list of cities
+func (r *RajaOngkir) GetCities() CitiesResp {
+	var b CitiesResp
+	request := r.createGetRequest(cityEndpoint)
+	_, _, err := request.EndStruct(&b)
 	if err != nil {
 		fmt.Println("Request failed", err)
 	}
-	return body
+	return b
+}
+
+// GetCost fetches the shipping rate
+func (r *RajaOngkir) GetCost(origin string, destination string, weight int, courier string) CostResp {
+	var b CostResp
+	data := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
+	request := r.createPostRequest(costEndpoint, data)
+	_, _, err := request.EndStruct(&b)
+	if err != nil {
+		fmt.Println("Request failed", err)
+	}
+	return b
 }

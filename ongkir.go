@@ -65,8 +65,8 @@ type RajaOngkir struct {
 
 // New Creates a new Raja Ongkir API object
 // containing the config
-func New(apiKey, baseURL string) RajaOngkir {
-	r := RajaOngkir{apiKey, baseURL, gorequest.New()}
+func New(apiKey, baseURL string) *RajaOngkir {
+	r := &RajaOngkir{apiKey, baseURL, gorequest.New()}
 	return r
 }
 

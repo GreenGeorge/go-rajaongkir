@@ -39,18 +39,18 @@ type CostResp struct {
 		Results []struct {
 			Code  string        `json:"code"`
 			Name  string        `json:"name"`
-			Costs []serviceCost `json:"costs"`
+			Costs []ServiceCost `json:"costs"`
 		} `json:"results"`
 	} `json:"rajaongkir"`
 }
 
-type serviceCost struct {
+type ServiceCost struct {
 	Service     string `json:"service"`
 	Description string `json:"description"`
-	Cost        []cost `json:"cost"`
+	Cost        []Cost `json:"cost"`
 }
 
-type cost struct {
+type Cost struct {
 	Value int64  `json:"value"`
 	ETD   string `json:"etd"`
 	Note  string `json:"note"`

@@ -36,12 +36,14 @@ type CostResp struct {
 			Code        int    `json:"code"`
 			Description string `json:"description"`
 		} `json:"status"`
-		Results []struct {
-			Code  string        `json:"code"`
-			Name  string        `json:"name"`
-			Costs []ServiceCost `json:"costs"`
-		} `json:"results"`
+		Results []Result `json:"results"`
 	} `json:"rajaongkir"`
+}
+
+type Result struct {
+	Code  string        `json:"code"`
+	Name  string        `json:"name"`
+	Costs []ServiceCost `json:"costs"`
 }
 
 type ServiceCost struct {

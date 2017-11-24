@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/parnurzeal/gorequest"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // List of endpoints according to https://rajaongkir.com/dokumentasi/starter
@@ -15,62 +16,20 @@ const (
 	costEndpoint     = "/cost"
 )
 
-type CitiesResp struct {
-	RajaOngkir struct {
-		Status struct {
-			Code int `json:"code"`
-		} `json:"status"`
-		Results []City `json:"results"`
-	} `json:"rajaongkir"`
-}
-
-type City struct {
-	City       string `json:"city_name"`
-	CityID     string `json:"city_id"`
-	Province   string `json:"province"`
-	ProvinceID string `json:"province_id"`
-	Type       string `json:"type"`
-}
-
-type CostResp struct {
-	RajaOngkir struct {
-		Status struct {
-			Code        int    `json:"code"`
-			Description string `json:"description"`
-		} `json:"status"`
-		Results []Result `json:"results"`
-	} `json:"rajaongkir"`
-}
-
-type Result struct {
-	Code  string        `json:"code"`
-	Name  string        `json:"name"`
-	Costs []ServiceCost `json:"costs"`
-}
-
-type ServiceCost struct {
-	Service     string `json:"service"`
-	Description string `json:"description"`
-	Cost        []Cost `json:"cost"`
-}
-
-type Cost struct {
-	Value int64  `json:"value"`
-	ETD   string `json:"etd"`
-	Note  string `json:"note"`
-}
-
-// RajaOngkir struct wraps our request operations
+// RajaOngkir wraps our request operations
 type RajaOngkir struct {
 	apiKey  string
 	baseURL string
-	request *gorequest.SuperAgent
+	client  *http.Client
 }
 
 // New Creates a new Raja Ongkir API object
 // containing the config
-func New(apiKey, baseURL string) *RajaOngkir {
-	r := &RajaOngkir{apiKey, baseURL, gorequest.New()}
+func New(apiKey, baseURL string, client *http.Client) *RajaOngkir {
+	if client == nil {
+		client = &http.Client{Timeout: time.Second * 10}
+	}
+	r := &RajaOngkir{apiKey, baseURL, client}
 	return r
 }
 
@@ -80,68 +39,74 @@ func (r *RajaOngkir) createTargetURL(endpoint string) string {
 	return targetURL
 }
 
-// Creates a get request with the proper headers
-func (r *RajaOngkir) createGetRequest(endpoint string) *gorequest.SuperAgent {
-	targetURL := r.createTargetURL(endpoint)
-	return r.request.
-		Get(targetURL).
-		Set("key", r.apiKey)
+func (r *RajaOngkir) createRequest(method, endpoint string, payloadString string) *http.Request {
+	url := r.createTargetURL(endpoint)
+	payload := strings.NewReader(payloadString)
+	req, reqErr := http.NewRequest(method, url, payload)
+	if reqErr != nil {
+		fmt.Println("Error in request", reqErr)
+	}
+	req.Header.Set("key", r.apiKey)
+	req.Header.Set("content-type", "application/x-www-form-urlencoded")
+	return req
 }
 
-// Creates a post request with the proper headers
-// and the data loaded
-func (r *RajaOngkir) createPostRequest(endpoint, data string) *gorequest.SuperAgent {
-	targetURL := r.createTargetURL(endpoint)
-	return r.request.
-		Post(targetURL).
-		Set("key", r.apiKey).
-		Send(data)
+func (r *RajaOngkir) executeRequest(req *http.Request) []byte {
+	res, resErr := r.client.Do(req)
+	if resErr != nil {
+		fmt.Println("Request failed", resErr)
+	}
+	defer res.Body.Close()
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		fmt.Println("Error reading body", readErr)
+	}
+	return body
 }
 
 // GetProvinces fetches the list of provinces
-func (r *RajaOngkir) GetProvinces() string {
-	request := r.createGetRequest(provinceEndpoint)
-	_, body, err := request.End()
-	if err != nil {
-		fmt.Println("Request failed", err)
-	}
-	return body
+func (r *RajaOngkir) GetProvinces() []map[string]string {
+	req := r.createRequest(http.MethodGet, provinceEndpoint, "")
+	body := r.executeRequest(req)
+	var b map[string]map[string][]map[string]string
+	json.Unmarshal(body, &b)
+	provinces := b["rajaongkir"]["results"]
+	return provinces
 }
 
 // GetProvince fetches a specific province
 // given an ID
-func (r *RajaOngkir) GetProvince(id string) string {
-	request := r.createGetRequest(fmt.Sprintf("%s?id=%s", provinceEndpoint, id))
-	_, body, err := request.End()
-	if err != nil {
-		fmt.Println("Request failed", err)
-	}
-	return body
+func (r *RajaOngkir) GetProvince(id string) map[string]interface{} {
+	req := r.createRequest(http.MethodGet, fmt.Sprintf("%s?id=%s", provinceEndpoint, id), "")
+	body := r.executeRequest(req)
+	var b map[string]map[string]map[string]interface{}
+	json.Unmarshal(body, &b)
+	province := b["rajaongkir"]["results"]
+	return province
 }
 
 // GetCities fetches the list of cities
 func (r *RajaOngkir) GetCities() []map[string]string {
+	req := r.createRequest(http.MethodGet, cityEndpoint, "")
+	body := r.executeRequest(req)
 	var b map[string]map[string][]map[string]string
-	request := r.createGetRequest(cityEndpoint)
-	res, _, err := request.End()
-	if err != nil {
-		fmt.Println("HERE")
-		fmt.Println("Request failed", err)
-	}
-	body, _ := ioutil.ReadAll(res.Body)
 	json.Unmarshal(body, &b)
 	cities := b["rajaongkir"]["results"]
 	return cities
 }
 
 // GetCost fetches the shipping rate
-func (r *RajaOngkir) GetCost(origin string, destination string, weight int, courier string) CostResp {
-	var b CostResp
-	data := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
-	request := r.createPostRequest(costEndpoint, data)
-	_, _, err := request.EndStruct(&b)
-	if err != nil {
-		fmt.Println("Request failed", err)
+func (r *RajaOngkir) GetCost(origin, destination string, weight int, courier string) []map[string]string {
+	queryString := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
+	req := r.createRequest(http.MethodPost, costEndpoint, queryString)
+	body := r.executeRequest(req)
+	var b map[string]map[string][]map[string][]map[string]string
+	json.Unmarshal(body, &b)
+	// Access safely
+	if len(b["rajaongkir"]["results"]) > 0 {
+		results := b["rajaongkir"]["results"][0]
+		costs := results["costs"]
+		return costs
 	}
-	return b
+	return []map[string]string{}
 }

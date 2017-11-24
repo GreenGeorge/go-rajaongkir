@@ -1,7 +1,9 @@
 package rajaongkir
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -118,14 +120,18 @@ func (r *RajaOngkir) GetProvince(id string) string {
 }
 
 // GetCities fetches the list of cities
-func (r *RajaOngkir) GetCities() CitiesResp {
-	var b CitiesResp
+func (r *RajaOngkir) GetCities() []map[string]string {
+	var b map[string]map[string][]map[string]string
 	request := r.createGetRequest(cityEndpoint)
-	_, _, err := request.EndStruct(&b)
+	res, _, err := request.End()
 	if err != nil {
+		fmt.Println("HERE")
 		fmt.Println("Request failed", err)
 	}
-	return b
+	body, _ := ioutil.ReadAll(res.Body)
+	json.Unmarshal(body, &b)
+	cities := b["rajaongkir"]["results"]
+	return cities
 }
 
 // GetCost fetches the shipping rate

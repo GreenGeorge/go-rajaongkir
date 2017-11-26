@@ -14,7 +14,7 @@ go get github.com/GreenGeorge/go-rajaongkir
 ## Usage
 ```go
   ...
-  import "github.com/GreenGeorge/rajaongkir"
+  import "github.com/GreenGeorge/go-rajaongkir"
   ...
 
   const apiKey = "YOUR_API_KEY_HERE"

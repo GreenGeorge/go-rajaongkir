@@ -7,4 +7,7 @@ jobs:
     steps:
       - checkout
       - run: go get -v -t -d ./...
-      - run: go test -v ./...
+      - run: go test -v ./... -race -coverprofile=coverage.txt -covermode=atomic
+      - store_artifacts:
+         path: /go/src/github.com/GreenGeorge/go-kurir/coverage.txt
+      - run: bash <(curl -s https://codecov.io/bash) -t ce78469a-ddd4-4e0f-81eb-05ec5640155f

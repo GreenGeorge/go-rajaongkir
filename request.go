@@ -18,7 +18,7 @@ func (r *RajaOngkir) createRequest(method, endpoint string, payloadString string
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		fmt.Println("Error in request", err)
+		return nil, err
 	}
 	req.Header.Set("key", r.apiKey)
 	req.Header.Set("content-type", "application/x-www-form-urlencoded")

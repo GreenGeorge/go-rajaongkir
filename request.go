@@ -25,15 +25,27 @@ func (r *RajaOngkir) createRequest(method, endpoint string, payloadString string
 	return req, err
 }
 
-func (r *RajaOngkir) executeRequest(req *http.Request) ([]byte, error) {
+func (r *RajaOngkir) sendRequest(method, endpoint, payload string, vs interface{}) error {
+	// Create the request
+	req, err := r.createRequest(method, endpoint, payload)
+	if err != nil {
+		return err
+	}
+	// Execute it
 	res, err := r.client.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
+	// Read from the body
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return body, nil
+	// Parse the body
+	err = json.Unmarshal(body, &vs)
+	if err != nil {
+		return err
+	}
+	return err
 }

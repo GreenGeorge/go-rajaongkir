@@ -119,22 +119,6 @@ func checkStatus(status *status) error {
 	return errors.New(status.Description)
 }
 
-func (r *RajaOngkir) sendRequest(method, endpoint, payload string, vs interface{}) error {
-	req, err := r.createRequest(method, endpoint, payload)
-	if err != nil {
-		return err
-	}
-	body, err := r.executeRequest(req)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(body, &vs)
-	if err != nil {
-		return err
-	}
-	return err
-}
-
 // GetProvinces fetches the list of provinces
 func (r *RajaOngkir) GetProvinces() ([]Province, error) {
 	re := &provincesResponse{}

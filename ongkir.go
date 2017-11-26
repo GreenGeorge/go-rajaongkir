@@ -1,7 +1,8 @@
+// Package rajaongkir provides methods for making requests to the RajaOngkir starter API.
+// See https://rajaongkir.com/dokumentasi/starter for further details on the API and to get an API Key
 package rajaongkir
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,7 +17,7 @@ const (
 	defaultClientTimeout = time.Second * 10
 )
 
-// RajaOngkir wraps our request operations
+// RajaOngkir stores the credentials for accessing the API
 type RajaOngkir struct {
 	apiKey  string
 	baseURL string
@@ -30,12 +31,13 @@ type status struct {
 	Description string `json:"description"`
 }
 
-type CarrierService struct {
+type carrierService struct {
 	Code  string `json:"code"`
 	Name  string `json:"name"`
 	Costs []Cost `json:"costs"`
 }
 
+// Cost stores the details of the shipping cost
 type Cost struct {
 	Service     string `json:"service"`
 	Description string `json:"description"`
@@ -46,11 +48,13 @@ type Cost struct {
 	} `json:"cost"`
 }
 
+// Province stores the details of a province
 type Province struct {
 	ProvinceID string `json:"province_id"`
 	Province   string `json:"province"`
 }
 
+// City stores the details of a city
 type City struct {
 	CityID     string `json:"city_id"`
 	ProvinceID string `json:"city_id"`
@@ -76,7 +80,7 @@ type provincesResponse struct {
 	} `json:"rajaongkir"`
 }
 
-type CityResponse struct {
+type cityResponse struct {
 	Rajaongkir struct {
 		Query   query  `json:"query"`
 		Status  status `json:"status"`
@@ -84,7 +88,7 @@ type CityResponse struct {
 	} `json:"rajaongkir"`
 }
 
-type CitiesResponse struct {
+type citiesResponse struct {
 	Rajaongkir struct {
 		Query   query  `json:"query"`
 		Status  status `json:"status"`
@@ -98,12 +102,12 @@ type costResponse struct {
 		Status             status           `json:"status"`
 		OriginDetails      City             `json:"origin_details"`
 		DestinationDetails City             `json:"destination_details"`
-		Results            []CarrierService `json:"results"`
+		Results            []carrierService `json:"results"`
 	} `json:"rajaongkir"`
 }
 
-// New Creates a new Raja Ongkir API object
-// containing the config
+// New initializes a new RajaOngkir struct
+// with a default client configured if none is specified
 func New(apiKey, baseURL string, client *http.Client) *RajaOngkir {
 	if client == nil {
 		client = &http.Client{Timeout: defaultClientTimeout}
@@ -135,7 +139,7 @@ func (r *RajaOngkir) GetProvinces() ([]Province, error) {
 }
 
 // GetProvince fetches a specific province
-// given an ID
+// matching a given ID
 func (r *RajaOngkir) GetProvince(id string) (Province, error) {
 	re := &provinceResponse{}
 	endpoint := fmt.Sprintf("%s?id=%s", provinceEndpoint, id)
@@ -153,7 +157,7 @@ func (r *RajaOngkir) GetProvince(id string) (Province, error) {
 
 // GetCities fetches the list of cities
 func (r *RajaOngkir) GetCities() ([]City, error) {
-	re := &CitiesResponse{}
+	re := &citiesResponse{}
 	err := r.sendRequest(http.MethodGet, cityEndpoint, "", re)
 	if err != nil {
 		return nil, err
@@ -163,6 +167,7 @@ func (r *RajaOngkir) GetCities() ([]City, error) {
 }
 
 // GetCost fetches the shipping rate
+// given the origin, destination, weight, and courier service
 func (r *RajaOngkir) GetCost(origin, destination string, weight int, courier string) ([]Cost, error) {
 	queryString := fmt.Sprintf("origin=%s&destination=%s&weight=%d&courier=%s", origin, destination, weight, courier)
 	re := &costResponse{}

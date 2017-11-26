@@ -1,13 +1,13 @@
 package rajaongkir
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
-// Creates target URL for making the requests
 func (r *RajaOngkir) createTargetURL(endpoint string) string {
 	targetURL := fmt.Sprintf("https://%s%s", r.baseURL, endpoint)
 	return targetURL

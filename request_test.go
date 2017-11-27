@@ -68,3 +68,37 @@ func TestCreateRequest(t *testing.T) {
 
 	}
 }
+
+func TestSendRequest(t *testing.T) {
+	provinceResObject := &provinceResponse{}
+
+	tables := []struct {
+		method         string
+		endpoint       string
+		payload        string
+		responseObject interface{}
+		fakeResponse   string
+		isErr          bool
+	}{
+		{"GET", "/province", "", provinceResObject, provinceRes, false},
+		{"¶PR", "/province", "", provinceResObject, provinceRes, true}, // Create request error
+	}
+
+	for _, table := range tables {
+		ts, ro, _ := setupTest(table.fakeResponse)
+		defer ts.Close()
+		responseObject := table.responseObject
+		err := ro.sendRequest(table.method, table.endpoint, table.payload, responseObject)
+
+		isErr := false
+		if err != nil {
+			isErr = true
+		}
+		expectedIsErr := table.isErr
+
+		if isErr != expectedIsErr {
+			t.Errorf("Error mismatch. Got %s, expected %v", err, expectedIsErr)
+		}
+
+	}
+}

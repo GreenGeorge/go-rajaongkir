@@ -4,6 +4,7 @@ Simple way to make requests to the [**RajaOngkir API**][1]. Uses Go's `net/http`
 
 [![CircleCI](https://circleci.com/gh/GreenGeorge/go-rajaongkir.svg?style=shield)](https://circleci.com/gh/GreenGeorge/go-rajaongkir)
 [![codecov](https://codecov.io/gh/GreenGeorge/go-rajaongkir/branch/master/graph/badge.svg)](https://codecov.io/gh/GreenGeorge/go-rajaongkir)
+[![GoDoc](https://godoc.org/github.com/GreenGeorge/go-rajaongkir?status.svg)](http://godoc.org/github.com/GreenGeorge/go-rajaongkir)
 
 
 [1]: https://rajaongkir.com/dokumentasi

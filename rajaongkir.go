@@ -159,7 +159,7 @@ func (r *RajaOngkir) GetCities() ([]City, error) {
 	re := &citiesResponse{}
 	err := r.sendRequest(http.MethodGet, cityEndpoint, "", re)
 	if err != nil {
-		return nil, err
+		return []City{}, err
 	}
 	cities := re.Rajaongkir.Results
 	return cities, nil

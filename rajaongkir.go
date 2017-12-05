@@ -90,7 +90,6 @@ type cityResponse struct {
 
 type citiesResponse struct {
 	Rajaongkir struct {
-		Query   query  `json:"query"`
 		Status  status `json:"status"`
 		Results []City `json:"results"`
 	} `json:"rajaongkir"`

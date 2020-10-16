@@ -71,6 +71,60 @@ const cityRes string = `{
     }
 }`
 
+const citiesInProvinceRes string = `{
+    "rajaongkir": {
+        "query": {
+            "province": "5"
+        },
+        "status": {
+            "code": 200,
+            "description": "OK"
+        },
+        "results": [
+            {
+                "city_id": "39",
+                "province_id": "5",
+                "province": "DI Yogyakarta",
+                "type": "Kabupaten",
+                "city_name": "Bantul",
+                "postal_code": "55715"
+            },
+            {
+                "city_id": "135",
+                "province_id": "5",
+                "province": "DI Yogyakarta",
+                "type": "Kabupaten",
+                "city_name": "Gunung Kidul",
+                "postal_code": "55812"
+            },
+            {
+                "city_id": "210",
+                "province_id": "5",
+                "province": "DI Yogyakarta",
+                "type": "Kabupaten",
+                "city_name": "Kulon Progo",
+                "postal_code": "55611"
+            },
+            {
+                "city_id": "419",
+                "province_id": "5",
+                "province": "DI Yogyakarta",
+                "type": "Kabupaten",
+                "city_name": "Sleman",
+                "postal_code": "55513"
+            },
+            {
+                "city_id": "501",
+                "province_id": "5",
+                "province": "DI Yogyakarta",
+                "type": "Kota",
+                "city_name": "Yogyakarta",
+                "postal_code": "55111"
+            }
+        ]
+    }
+}`
+
 const citiesRes string = `{
     "rajaongkir": {
         "query": {
@@ -260,6 +314,44 @@ func TestGetCities(t *testing.T) {
 	expectedMethod := "GET"
 	expectedAPIKey := "APIKEY12345"
 	expectedEndpoint := "/city"
+
+	if rec.receivedMethod != expectedMethod {
+		t.Errorf("Wrong method. Received %s, expected %s", rec.receivedMethod, expectedMethod)
+	}
+	if rec.receivedAPIKey != expectedAPIKey {
+		t.Errorf("Wrong APIKEY. Received %s, expected %s", rec.receivedAPIKey, expectedAPIKey)
+	}
+	if rec.receivedEndpoint != expectedEndpoint {
+		t.Errorf("Wrong method. Received %s, expected %s", rec.receivedEndpoint, expectedEndpoint)
+	}
+}
+
+func TestGetCityInProvince(t *testing.T) {
+	ts, ro, rec := setupTest(citiesInProvinceRes)
+	defer ts.Close()
+	ro.GetCitiesInProvince("5")
+	expectedMethod := "GET"
+	expectedAPIKey := "APIKEY12345"
+	expectedEndpoint := "/city?province=5"
+
+	if rec.receivedMethod != expectedMethod {
+		t.Errorf("Wrong method. Received %s, expected %s", rec.receivedMethod, expectedMethod)
+	}
+	if rec.receivedAPIKey != expectedAPIKey {
+		t.Errorf("Wrong APIKEY. Received %s, expected %s", rec.receivedAPIKey, expectedAPIKey)
+	}
+	if rec.receivedEndpoint != expectedEndpoint {
+		t.Errorf("Wrong method. Received %s, expected %s", rec.receivedEndpoint, expectedEndpoint)
+	}
+}
+
+func TestGetCity(t *testing.T) {
+	ts, ro, rec := setupTest(cityRes)
+	defer ts.Close()
+	ro.GetCity("5", "39")
+	expectedMethod := "GET"
+	expectedAPIKey := "APIKEY12345"
+	expectedEndpoint := "/city?province=5&id=39"
 
 	if rec.receivedMethod != expectedMethod {
 		t.Errorf("Wrong method. Received %s, expected %s", rec.receivedMethod, expectedMethod)

@@ -165,6 +165,37 @@ func (r *RajaOngkir) GetCities() ([]City, error) {
 	return cities, nil
 }
 
+// GetCitiesInProvince fetches the list of cities in provinceID
+func (r *RajaOngkir) GetCitiesInProvince(provinceID string) ([]City, error) {
+	if provinceID == "" {
+		return nil, fmt.Errorf("provinceID must be specified")
+	}
+	re := &citiesResponse{}
+	endpoint := fmt.Sprintf("%s?province=%s", cityEndpoint, provinceID)
+	err := r.sendRequest(http.MethodGet, endpoint, "", re)
+	if err != nil {
+		return []City{}, err
+	}
+	cities := re.Rajaongkir.Results
+	return cities, nil
+}
+
+// GetCity fetches a specific city
+// matching a given provinceID and cityID
+func (r *RajaOngkir) GetCity(provinceID, cityID string) (City, error) {
+	if provinceID == "" || cityID == "" {
+		return City{}, fmt.Errorf("provinceID/cityID must be specified")
+	}
+	re := &cityResponse{}
+	endpoint := fmt.Sprintf("%s?province=%s&id=%s", cityEndpoint, provinceID, cityID)
+	err := r.sendRequest(http.MethodGet, endpoint, "", re)
+	if err != nil {
+		return City{}, err
+	}
+	city := re.Rajaongkir.Results
+	return city, nil
+}
+
 // GetCost fetches the shipping rate
 // given the origin, destination, weight, and courier service
 func (r *RajaOngkir) GetCost(origin, destination string, weight int, courier string) ([]Cost, error) {

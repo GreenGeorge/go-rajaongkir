@@ -1,3 +1,3 @@
-module github.com/gafar-code/go-rajaongkir
+module github.com/GreenGeorge/go-rajaongkir
 
 go 1.21.3

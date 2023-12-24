@@ -3,7 +3,7 @@ package rajaongkir
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -38,7 +38,7 @@ func (r *RajaOngkir) sendRequest(method, endpoint, payload string, vs interface{
 	}
 	defer res.Body.Close()
 	// Read from the body
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return err
 	}
